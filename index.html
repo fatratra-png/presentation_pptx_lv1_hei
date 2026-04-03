@@ -1,0 +1,944 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>11 Septembre 2001 — Twin Towers · HEI Groupe N1</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Oswald:wght@300;400;600;700&family=Open+Sans:ital,wght@0,300;0,400;0,600;1,300&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --red:#D42B2B;--red-dk:#8B0000;--red-glow:rgba(212,43,43,.25);
+  --gold:#C9973A;--gold-dk:#8B6520;
+  --black:#080808;--dark1:#111111;--dark2:#1A1A1A;--dark3:#242424;--dark4:#2E2E2E;
+  --cream:#F0EAE0;--white:#ffffff;
+  --gray:#888888;--lgray:#555555;--xgray:#333333;
+}
+html,body{width:100%;height:100%;overflow:hidden;background:var(--black)}
+body{font-family:'Open Sans',sans-serif;cursor:default}
+
+/* ═══ DECK ═══════════════════════════════════════ */
+#deck{position:fixed;inset:0;overflow:hidden}
+.slide{
+  position:absolute;inset:0 0 48px 0;
+  display:none;flex-direction:column;
+  background:var(--black);
+  will-change:opacity,transform;
+}
+.slide.active{display:flex}
+.slide.anim-in{animation:slideEnter .45s cubic-bezier(.22,1,.36,1) forwards}
+.slide.anim-out{animation:slideExit .3s ease forwards;pointer-events:none}
+@keyframes slideEnter{from{opacity:0;transform:translateX(40px)}to{opacity:1;transform:none}}
+@keyframes slideExit{from{opacity:1;transform:none}to{opacity:0;transform:translateX(-40px)}}
+@keyframes slideEnterBack{from{opacity:0;transform:translateX(-40px)}to{opacity:1;transform:none}}
+@keyframes slideExitBack{from{opacity:1;transform:none}to{opacity:0;transform:translateX(40px)}}
+.slide.anim-in-back{animation:slideEnterBack .45s cubic-bezier(.22,1,.36,1) forwards}
+.slide.anim-out-back{animation:slideExitBack .3s ease forwards;pointer-events:none}
+
+/* ═══ NAV BAR ════════════════════════════════════ */
+#nav{
+  position:fixed;bottom:0;left:0;right:0;height:48px;z-index:200;
+  display:flex;align-items:center;justify-content:space-between;
+  background:rgba(8,8,8,.97);
+  border-top:1px solid #1e1e1e;
+  padding:0 20px;
+}
+.nav-btn{
+  background:none;border:1px solid var(--lgray);
+  color:var(--gray);padding:5px 20px;cursor:pointer;
+  font-family:'Bebas Neue';font-size:15px;letter-spacing:2px;
+  transition:all .2s;user-select:none;
+}
+.nav-btn:hover{border-color:var(--red);color:var(--cream)}
+.nav-btn:disabled{opacity:.3;cursor:not-allowed}
+#counter{font-family:'Bebas Neue';font-size:14px;color:var(--lgray);letter-spacing:3px}
+#dots{display:flex;gap:7px;align-items:center}
+.dot{
+  width:7px;height:7px;border-radius:50%;background:var(--lgray);
+  cursor:pointer;transition:all .25s;
+}
+.dot.on{background:var(--red);transform:scale(1.5)}
+.dot:hover:not(.on){background:var(--gray)}
+
+/* ═══ SHARED COMPONENTS ══════════════════════════ */
+.topbar{height:5px;background:var(--red);flex-shrink:0}
+.topbar.gold{background:var(--gold)}
+.topbar.cream{background:var(--cream)}
+.topbar.thick{height:10px}
+
+.slide-tag{
+  font-family:'Bebas Neue';font-size:10px;letter-spacing:3px;
+  color:var(--red);padding:14px 32px 2px;flex-shrink:0;
+}
+.slide-tag.gold{color:var(--gold)}
+.slide-tag.cream{color:var(--cream)}
+
+.slide-h1{
+  font-family:'Bebas Neue';
+  font-size:clamp(30px,4.8vw,58px);
+  color:#fff;padding:0 32px;letter-spacing:2px;line-height:1;
+  flex-shrink:0;margin-bottom:6px;
+}
+
+.source-line{
+  font-size:9.5px;color:var(--lgray);font-style:italic;
+  padding:6px 32px 4px;flex-shrink:0;
+}
+
+/* cards grid */
+.card-grid{
+  display:grid;gap:10px;padding:10px 32px 6px;flex:1;overflow:hidden;
+}
+.card{
+  background:var(--dark2);
+  border-top:3px solid var(--red);
+  padding:14px 16px;position:relative;overflow:hidden;
+  display:flex;flex-direction:column;
+}
+.card.gold-top{border-top-color:var(--gold)}
+.card.cream-top{border-top-color:var(--cream)}
+.card-n{
+  font-family:'Bebas Neue';font-size:36px;color:var(--red);
+  line-height:1;flex-shrink:0;
+}
+.card-n.gold{color:var(--gold)}
+.card-n.cream{color:var(--cream)}
+.card-title{
+  font-family:'Bebas Neue';font-size:clamp(13px,1.7vw,20px);
+  color:#fff;letter-spacing:1px;margin:4px 0 6px;flex-shrink:0;
+}
+.card-desc{font-size:10.5px;color:var(--gray);line-height:1.55;flex:1}
+.card-who{
+  position:absolute;right:12px;bottom:8px;
+  font-size:9.5px;color:var(--lgray);font-family:'Bebas Neue';letter-spacing:1px;
+}
+.card-icon{
+  position:absolute;right:12px;top:12px;
+  font-size:22px;opacity:.5;
+}
+
+/* timeline */
+.timeline{
+  flex:1;padding:6px 32px 4px;
+  display:flex;flex-direction:column;gap:5px;overflow:hidden;
+}
+.trow{
+  display:flex;align-items:center;gap:12px;
+  padding:8px 12px;border-left:3px solid transparent;
+  transition:background .2s;
+}
+.trow.key{background:rgba(212,43,43,.08);border-left-color:var(--red)}
+.trow:hover{background:rgba(255,255,255,.04)}
+.tbadge{
+  flex-shrink:0;width:70px;text-align:center;
+  font-family:'Bebas Neue';font-size:17px;
+  padding:4px 0;letter-spacing:1px;
+}
+.trow.key .tbadge{background:var(--red);color:#fff}
+.trow:not(.key) .tbadge{background:var(--dark3);color:var(--gray)}
+.tcontent{flex:1;min-width:0}
+.ttitle{
+  font-family:'Bebas Neue';
+  font-size:clamp(13px,1.7vw,19px);
+  color:#fff;letter-spacing:1px;
+}
+.trow:not(.key) .ttitle{color:var(--gray);font-size:clamp(12px,1.5vw,16px)}
+.tdesc{font-size:10px;color:var(--lgray);margin-top:1px;line-height:1.4}
+.tflash{color:var(--red);font-size:15px;flex-shrink:0}
+
+/* stats */
+.stats-row{
+  display:flex;gap:8px;padding:0 32px;margin:10px 0;flex-shrink:0;
+}
+.stat{
+  flex:1;background:var(--dark2);padding:14px 12px;
+  border-top:3px solid currentColor;
+}
+.stat.red{color:var(--red);flex:1.6}
+.stat.cream{color:var(--cream)}
+.stat.gold{color:var(--gold)}
+.stat-v{
+  font-family:'Bebas Neue';font-size:clamp(32px,4.5vw,60px);
+  display:block;line-height:1;
+}
+.stat-l{
+  font-family:'Bebas Neue';font-size:10px;color:var(--gray);
+  letter-spacing:1px;margin-top:5px;
+}
+
+/* impact rows */
+.impacts{display:flex;flex-direction:column;gap:5px;padding:0 32px;flex-shrink:0}
+.irow{
+  display:flex;align-items:center;gap:10px;
+  padding:9px 12px;border-left:4px solid var(--lgray);
+  background:var(--dark1);
+}
+.irow.red{border-left-color:var(--red);background:rgba(212,43,43,.06)}
+.irow-text{font-size:10.5px;color:var(--gray);line-height:1.45}
+.irow.red .irow-text{color:var(--cream)}
+
+/* geo rows */
+.geo-rows{
+  flex:1;display:flex;flex-direction:column;gap:5px;
+  padding:6px 32px 4px;overflow:hidden;
+}
+.grow{
+  display:flex;align-items:center;gap:10px;
+  padding:9px 12px;
+}
+.grow:nth-child(odd){background:var(--dark2)}
+.grow:nth-child(even){background:var(--dark1)}
+.gyear{
+  flex-shrink:0;width:52px;text-align:center;
+  font-family:'Bebas Neue';font-size:14px;color:var(--gray);
+  background:var(--black);padding:3px 0;
+}
+.gdot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+.gdot.r{background:var(--red)}
+.gdot.g{background:var(--gold)}
+.gdot.gr{background:var(--lgray)}
+.gtitle{
+  font-family:'Bebas Neue';font-size:clamp(13px,1.7vw,19px);
+  color:var(--cream);letter-spacing:1px;flex-shrink:0;
+  min-width:180px;
+}
+.gdesc{font-size:10px;color:var(--gray);flex:1;line-height:1.4}
+
+/* 3-col cards */
+.three-col{
+  display:grid;grid-template-columns:1fr 1fr 1fr;
+  gap:10px;padding:10px 32px 6px;flex:1;overflow:hidden;
+}
+.col-card{
+  background:var(--dark2);border-top:3px solid var(--red);
+  padding:14px;display:flex;flex-direction:column;overflow:hidden;
+}
+.col-card.gold-top{border-top-color:var(--gold)}
+.col-card.cream-top{border-top-color:var(--cream)}
+.col-num{font-family:'Bebas Neue';font-size:26px;line-height:1;margin-bottom:4px}
+.col-title{font-family:'Bebas Neue';font-size:15px;color:#fff;letter-spacing:1px;margin-bottom:8px;flex-shrink:0}
+.col-rule{height:1px;background:var(--lgray);margin-bottom:8px;flex-shrink:0}
+.col-kv{display:flex;flex-direction:column;gap:5px;flex:1;overflow:hidden}
+.kv-row{display:flex;flex-direction:column;gap:1px}
+.kv-k{font-size:8.5px;color:var(--lgray);letter-spacing:.5px;font-weight:600}
+.kv-v{font-size:10.5px;color:var(--cream)}
+.col-src{
+  font-size:8px;color:var(--lgray);font-style:italic;
+  margin-top:8px;padding-top:6px;border-top:1px solid var(--dark3);flex-shrink:0;
+}
+
+/* conclusion rows */
+.conc-rows{flex:1;display:flex;flex-direction:column;gap:4px;padding:6px 32px;overflow:hidden}
+.crow{
+  display:flex;align-items:center;gap:12px;
+  padding:10px 14px;border-left:3px solid;
+  flex:1;
+}
+.crow:nth-child(odd){background:var(--dark2)}
+.crow:nth-child(even){background:var(--dark1)}
+.crow-n{font-family:'Bebas Neue';font-size:20px;flex-shrink:0;width:28px}
+.crow-t{font-family:'Bebas Neue';font-size:clamp(13px,1.6vw,18px);letter-spacing:1px;flex-shrink:0;min-width:160px}
+.crow-d{font-size:10px;color:var(--lgray);flex:1;line-height:1.4}
+
+/* sources slide */
+.src-body{display:flex;flex-direction:column;gap:14px;padding:10px 32px;flex:1;overflow:hidden}
+.src-sec-h{
+  font-family:'Bebas Neue';font-size:13px;letter-spacing:2px;
+  padding:2px 10px;margin-bottom:5px;display:inline-flex;
+  border-left:3px solid;
+}
+.src-item{font-size:10px;color:var(--gray);padding:2px 0 2px 14px;line-height:1.5}
+
+/* ═══ SLIDE 1: COVER ═══════════════════════════ */
+#s1{flex-direction:row}
+.cov-left{
+  width:38%;background:var(--red);
+  display:flex;flex-direction:column;
+  padding:28px 24px 24px;position:relative;overflow:hidden;flex-shrink:0;
+}
+.cov-left::after{
+  content:'';position:absolute;right:-50px;top:0;bottom:0;
+  width:100px;background:var(--red-dk);
+  transform:skewX(-5deg);
+}
+.cov-le{font-family:'Bebas Neue';font-size:13px;color:var(--red-dk);letter-spacing:7px;margin-bottom:2px}
+.cov-11{
+  font-family:'Bebas Neue';
+  font-size:clamp(90px,14vw,155px);
+  color:#fff;line-height:.82;letter-spacing:-8px;
+}
+.cov-sept{font-family:'Bebas Neue';font-size:clamp(34px,5.5vw,60px);color:#fff;letter-spacing:3px;line-height:1}
+.cov-yr{font-family:'Bebas Neue';font-size:clamp(36px,6vw,66px);color:var(--red-dk);letter-spacing:4px;line-height:1}
+.cov-line{width:90%;height:3px;background:var(--cream);margin:10px 0}
+.cov-sub{font-family:'Bebas Neue';font-size:19px;color:var(--cream);letter-spacing:2px}
+.cov-right{
+  flex:1;display:flex;flex-direction:column;justify-content:center;
+  padding:28px 36px;position:relative;overflow:hidden;
+}
+.ghost{
+  position:absolute;right:-10px;top:-20px;
+  font-family:'Bebas Neue';font-size:clamp(180px,28vw,270px);
+  color:#111;line-height:1;pointer-events:none;letter-spacing:-10px;
+  user-select:none;
+}
+.cr-z{position:relative;z-index:1}
+.cr-super{
+  font-family:'Bebas Neue';font-size:clamp(16px,2.2vw,24px);
+  color:var(--cream);letter-spacing:2px;line-height:1.15;margin-bottom:12px;
+}
+.cr-body{font-size:12.5px;color:var(--gray);line-height:1.7;margin-bottom:18px}
+.cr-sep{height:1px;background:var(--lgray);margin-bottom:14px}
+.cr-school{font-family:'Bebas Neue';font-size:11px;color:var(--gray);letter-spacing:2px;margin-bottom:3px}
+.cr-group{font-size:11px;color:var(--lgray);margin-bottom:14px}
+.cr-ids{display:flex;gap:16px;flex-wrap:wrap}
+.cr-id{font-size:12px;color:var(--gray)}
+.cr-id:first-child{color:var(--cream);font-weight:600}
+
+/* ─ towers ─ */
+#towers-wrap{
+  position:absolute;bottom:48px;right:18px;
+  width:clamp(150px,20vw,210px);
+  height:clamp(160px,22vw,230px);
+  z-index:2;
+}
+#towers-wrap svg{width:100%;height:100%;overflow:visible}
+
+/* ═══ MÉMOIRE SLIDE ════════════════════════════ */
+.mem-layout{
+  display:flex;flex:1;gap:14px;
+  padding:8px 32px 6px;overflow:hidden;
+}
+.mem-left{
+  width:38%;background:#0d0000;border-left:4px solid var(--red);
+  padding:18px;display:flex;flex-direction:column;flex-shrink:0;overflow:hidden;
+}
+.mem-quote-mark{
+  font-family:'Bebas Neue';font-size:55px;color:var(--red);
+  line-height:.75;margin-bottom:6px;
+}
+.mem-quote{
+  font-size:clamp(12px,1.4vw,15px);color:var(--cream);
+  line-height:1.6;font-style:italic;margin-bottom:10px;flex-shrink:0;
+}
+.mem-rule{width:70px;height:3px;background:var(--red);margin-bottom:12px;flex-shrink:0}
+.mem-items{display:flex;flex-direction:column;gap:7px;flex:1;overflow:hidden}
+.mem-item{border-left:2px solid var(--red);padding-left:9px}
+.mem-item-t{font-family:'Bebas Neue';font-size:12px;color:var(--cream)}
+.mem-item-d{font-size:9px;color:var(--lgray);line-height:1.4}
+.mem-right{flex:1;display:flex;flex-direction:column;gap:6px;overflow:hidden}
+.mem-right-tag{font-family:'Bebas Neue';font-size:11px;color:var(--lgray);letter-spacing:2px;flex-shrink:0}
+.mem-card{
+  background:var(--dark2);border-top:3px solid var(--lgray);
+  padding:12px;flex:1;
+}
+.mem-card:nth-child(3){background:var(--dark3)}
+.mem-card-t{font-family:'Bebas Neue';font-size:15px;color:var(--cream);letter-spacing:1px;margin-bottom:5px}
+.mem-card-d{font-size:10px;color:var(--gray);line-height:1.5}
+
+/* ═══ ANIMATIONS ════════════════════════════════ */
+@keyframes fadeUp{
+  from{opacity:0;transform:translateY(16px)}
+  to{opacity:1;transform:none}
+}
+@keyframes sldIn{
+  from{opacity:0;transform:translateX(-20px)}
+  to{opacity:1;transform:none}
+}
+@keyframes countPop{
+  from{opacity:0;transform:scale(.85)}
+  to{opacity:1;transform:scale(1)}
+}
+@keyframes planeMove{
+  0%{transform:translate(-280px,-70px)rotate(-12deg)scaleX(-1);opacity:0}
+  15%{opacity:1}
+  82%{opacity:1}
+  100%{transform:translate(75px,55px)rotate(-12deg)scaleX(-1);opacity:0}
+}
+@keyframes explodeR{
+  0%{r:0;opacity:0}
+  25%{opacity:1}
+  60%{r:22;opacity:.9}
+  100%{r:36;opacity:0}
+}
+@keyframes smokeRise{
+  0%{opacity:0;transform:translateY(0)scaleX(1)}
+  15%{opacity:.65}
+  100%{opacity:0;transform:translateY(-55px)scaleX(2.2)}
+}
+@keyframes glow{
+  0%,100%{filter:drop-shadow(0 0 0px var(--red))}
+  50%{filter:drop-shadow(0 0 6px var(--red))}
+}
+
+.slide.active .slide-tag{animation:fadeUp .35s ease both}
+.slide.active .slide-h1{animation:fadeUp .4s .08s ease both}
+.slide.active .card{animation:fadeUp .4s ease both}
+.slide.active .card:nth-child(1){animation-delay:.08s}
+.slide.active .card:nth-child(2){animation-delay:.16s}
+.slide.active .card:nth-child(3){animation-delay:.24s}
+.slide.active .card:nth-child(4){animation-delay:.32s}
+.slide.active .trow{animation:sldIn .35s ease both}
+.slide.active .trow:nth-child(1){animation-delay:.06s}
+.slide.active .trow:nth-child(2){animation-delay:.12s}
+.slide.active .trow:nth-child(3){animation-delay:.18s}
+.slide.active .trow:nth-child(4){animation-delay:.24s}
+.slide.active .trow:nth-child(5){animation-delay:.30s}
+.slide.active .trow:nth-child(6){animation-delay:.36s}
+.slide.active .stat{animation:countPop .45s ease both}
+.slide.active .stat:nth-child(1){animation-delay:.08s}
+.slide.active .stat:nth-child(2){animation-delay:.18s}
+.slide.active .stat:nth-child(3){animation-delay:.28s}
+.slide.active .stat:nth-child(4){animation-delay:.38s}
+.slide.active .grow{animation:sldIn .35s ease both}
+.slide.active .grow:nth-child(1){animation-delay:.04s}
+.slide.active .grow:nth-child(2){animation-delay:.1s}
+.slide.active .grow:nth-child(3){animation-delay:.16s}
+.slide.active .grow:nth-child(4){animation-delay:.22s}
+.slide.active .grow:nth-child(5){animation-delay:.28s}
+.slide.active .col-card{animation:fadeUp .4s ease both}
+.slide.active .col-card:nth-child(1){animation-delay:.1s}
+.slide.active .col-card:nth-child(2){animation-delay:.2s}
+.slide.active .col-card:nth-child(3){animation-delay:.3s}
+.slide.active .crow{animation:sldIn .4s ease both}
+.slide.active .crow:nth-child(1){animation-delay:.08s}
+.slide.active .crow:nth-child(2){animation-delay:.16s}
+.slide.active .crow:nth-child(3){animation-delay:.24s}
+.slide.active .crow:nth-child(4){animation-delay:.32s}
+.slide.active .mem-left{animation:sldIn .45s ease both}
+.slide.active .mem-card{animation:fadeUp .4s ease both}
+.slide.active .mem-card:nth-child(2){animation-delay:.12s}
+.slide.active .mem-card:nth-child(3){animation-delay:.22s}
+.slide.active .mem-card:nth-child(4){animation-delay:.32s}
+
+/* fullscreen hint */
+#hint{
+  position:fixed;top:12px;right:14px;z-index:300;
+  font-family:'Bebas Neue';font-size:11px;letter-spacing:2px;
+  color:var(--lgray);padding:4px 10px;border:1px solid var(--lgray);
+  cursor:pointer;transition:all .2s;
+}
+#hint:hover{color:var(--cream);border-color:var(--red)}
+</style>
+</head>
+<body>
+
+<div id="hint" onclick="toggleFS()">⛶ PLEIN ÉCRAN</div>
+
+<div id="deck">
+
+<!-- ══ S1: COVER ════════════════════════════════════════════ -->
+<div class="slide active" id="s1">
+  <div class="cov-left">
+    <div class="cov-le">LE</div>
+    <div class="cov-11">11</div>
+    <div class="cov-sept">SEPTEMBRE</div>
+    <div class="cov-yr">2001</div>
+    <div class="cov-line"></div>
+    <div class="cov-sub">Twin Towers</div>
+  </div>
+  <div class="cov-right">
+    <div class="ghost">9/11</div>
+    <div class="cr-z">
+      <div class="cr-super">UN ÉVÉNEMENT-SOURCE<br>AUX RÉPERCUSSIONS MONDIALES</div>
+      <div class="cr-body">L'attentat du 11 septembre 2001 marque un tournant civilisationnel. En 102 minutes, 2&nbsp;977 personnes de 90 nationalités perdent la vie et le monde bascule irrémédiablement.</div>
+      <div class="cr-sep"></div>
+      <div class="cr-school">HAUTE ÉCOLE D'INFORMATIQUE</div>
+      <div class="cr-group">Groupe N1 &nbsp;·&nbsp; Exposé académique 2025</div>
+      <div class="cr-ids">
+        <span class="cr-id">STD25001</span>
+        <span class="cr-id">STD25003</span>
+        <span class="cr-id">STD25014</span>
+        <span class="cr-id">STD25027</span>
+      </div>
+    </div>
+    <!-- TOWERS SVG -->
+    <div id="towers-wrap">
+      <svg id="twrsvg" viewBox="0 0 200 230" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="g1" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%" stop-color="#2a2a2a"/>
+            <stop offset="100%" stop-color="#191919"/>
+          </linearGradient>
+          <linearGradient id="g2" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%" stop-color="#222"/>
+            <stop offset="100%" stop-color="#111"/>
+          </linearGradient>
+          <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#0a0a14"/>
+            <stop offset="100%" stop-color="#050508"/>
+          </linearGradient>
+        </defs>
+        <!-- sky -->
+        <rect x="0" y="0" width="200" height="230" fill="url(#sky)"/>
+        <!-- city silhouette bg -->
+        <g fill="#0c0c0c">
+          <rect x="0" y="175" width="18" height="55"/>
+          <rect x="155" y="160" width="22" height="70"/>
+          <rect x="168" y="145" width="13" height="85"/>
+          <rect x="182" y="168" width="18" height="62"/>
+          <rect x="0" y="195" width="200" height="35"/>
+        </g>
+        <!-- Tower 1 (North WTC1) -->
+        <rect x="18" y="28" width="64" height="182" fill="url(#g1)" stroke="#2e2e2e" stroke-width=".5"/>
+        <!-- T1 antenna -->
+        <rect x="46" y="6" width="5" height="24" fill="#3a3a3a"/>
+        <rect x="47.5" y="3" width="2" height="5" fill="#444"/>
+        <!-- T1 window lights -->
+        <g fill="#3a4d6a" opacity=".6">
+          <rect x="24" y="34" width="5" height="3"/><rect x="32" y="34" width="5" height="3"/>
+          <rect x="40" y="34" width="5" height="3"/><rect x="48" y="34" width="5" height="3"/>
+          <rect x="56" y="34" width="5" height="3"/><rect x="64" y="34" width="5" height="3"/>
+          <rect x="24" y="42" width="5" height="3"/><rect x="32" y="42" width="5" height="3"/>
+          <rect x="40" y="42" width="5" height="3"/><rect x="48" y="42" width="5" height="3"/>
+          <rect x="56" y="42" width="5" height="3"/><rect x="64" y="42" width="5" height="3"/>
+          <rect x="24" y="50" width="5" height="3"/><rect x="32" y="50" width="5" height="3"/>
+          <rect x="48" y="50" width="5" height="3"/><rect x="56" y="50" width="5" height="3"/>
+          <rect x="24" y="58" width="5" height="3"/><rect x="40" y="58" width="5" height="3"/>
+          <rect x="56" y="58" width="5" height="3"/><rect x="64" y="58" width="5" height="3"/>
+          <rect x="24" y="66" width="5" height="3"/><rect x="32" y="66" width="5" height="3"/>
+          <rect x="48" y="66" width="5" height="3"/><rect x="64" y="66" width="5" height="3"/>
+          <rect x="32" y="74" width="5" height="3"/><rect x="48" y="74" width="5" height="3"/>
+          <rect x="24" y="82" width="5" height="3"/><rect x="56" y="82" width="5" height="3"/>
+          <rect x="40" y="90" width="5" height="3"/><rect x="24" y="98" width="5" height="3"/>
+        </g>
+        <!-- T1 lit windows (warm orange glow) -->
+        <g fill="#c86a20" opacity=".8">
+          <rect x="32" y="58" width="5" height="3"/>
+          <rect x="48" y="74" width="5" height="3" display="none"/>
+          <rect x="40" y="66" width="5" height="3"/>
+          <rect x="56" y="74" width="5" height="3"/>
+        </g>
+        <!-- Tower 2 (South WTC2) -->
+        <rect x="100" y="48" width="62" height="162" fill="url(#g2)" stroke="#2a2a2a" stroke-width=".5"/>
+        <!-- T2 windows -->
+        <g fill="#3a4d6a" opacity=".5">
+          <rect x="106" y="56" width="5" height="3"/><rect x="114" y="56" width="5" height="3"/>
+          <rect x="122" y="56" width="5" height="3"/><rect x="130" y="56" width="5" height="3"/>
+          <rect x="138" y="56" width="5" height="3"/><rect x="146" y="56" width="5" height="3"/>
+          <rect x="106" y="64" width="5" height="3"/><rect x="114" y="64" width="5" height="3"/>
+          <rect x="122" y="64" width="5" height="3"/><rect x="138" y="64" width="5" height="3"/>
+          <rect x="106" y="72" width="5" height="3"/><rect x="130" y="72" width="5" height="3"/>
+          <rect x="146" y="72" width="5" height="3"/>
+          <rect x="114" y="80" width="5" height="3"/><rect x="138" y="80" width="5" height="3"/>
+          <rect x="106" y="88" width="5" height="3"/><rect x="122" y="88" width="5" height="3"/>
+          <rect x="106" y="96" width="5" height="3"/><rect x="146" y="96" width="5" height="3"/>
+          <rect x="122" y="104" width="5" height="3"/>
+        </g>
+        <!-- T2 lit windows -->
+        <g fill="#c86a20" opacity=".7">
+          <rect x="122" y="72" width="5" height="3"/>
+          <rect x="138" y="64" width="5" height="3" display="none"/>
+        </g>
+        <!-- Ground / base -->
+        <rect x="0" y="210" width="200" height="20" fill="#0a0a0a"/>
+        <!-- Plane -->
+        <g id="plane" style="transform:translate(-280px,-70px)rotate(-12deg)scaleX(-1);opacity:0">
+          <polygon points="0,0 -32,-9 -28,0 -32,9" fill="#aaaaaa"/>
+          <polygon points="-9,-2 -22,-16 -24,-11 -13,-2" fill="#999"/>
+          <polygon points="-9,2 -22,16 -24,11 -13,2" fill="#999"/>
+          <rect x="-28" y="-2" width="5" height="4" fill="#888"/>
+        </g>
+        <!-- Explosion -->
+        <g id="explosion" opacity="0">
+          <circle id="ec1" cx="84" cy="82" r="0" fill="#ff6600"/>
+          <circle id="ec2" cx="94" cy="72" r="0" fill="#ff3300"/>
+          <circle id="ec3" cx="76" cy="78" r="0" fill="#ffaa00"/>
+          <circle id="ec4" cx="88" cy="88" r="0" fill="#ff8800"/>
+        </g>
+        <!-- Smoke -->
+        <g id="smoke" opacity="0" style="transform-origin:84px 82px">
+          <ellipse cx="84" cy="72" rx="10" ry="6" fill="#2a2a2a"/>
+          <ellipse cx="90" cy="58" rx="13" ry="8" fill="#222"/>
+          <ellipse cx="80" cy="44" rx="17" ry="11" fill="#1a1a1a"/>
+        </g>
+      </svg>
+    </div>
+  </div>
+</div>
+
+<!-- ══ S2: PLAN ══════════════════════════════════════════════ -->
+<div class="slide" id="s2">
+  <div class="topbar"></div>
+  <div class="slide-tag">Plan de l'exposé</div>
+  <div class="slide-h1">SOMMAIRE</div>
+  <div class="card-grid" style="grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr">
+    <div class="card">
+      <div class="card-n">01</div>
+      <div class="card-title">CONTEXTE &amp; RACINES</div>
+      <div class="card-desc">Les origines profondes du jihadisme anti-américain — genèse d'Al-Qaïda et motivations de Ben Laden (1979–2001)</div>
+      <div class="card-who">STD25001</div>
+    </div>
+    <div class="card">
+      <div class="card-n">02</div>
+      <div class="card-title">L'ATTAQUE DU 11 SEPTEMBRE</div>
+      <div class="card-desc">Chronologie des 102 minutes fatales et bilan humain de l'attentat le plus meurtrier de l'histoire américaine</div>
+      <div class="card-who">STD25003</div>
+    </div>
+    <div class="card gold-top">
+      <div class="card-n gold">03</div>
+      <div class="card-title">CONSÉQUENCES GÉOPOLITIQUES</div>
+      <div class="card-desc">Vingt ans de guerres, de lois sécuritaires et de recomposition du monde — Afghanistan, Irak, PATRIOT Act, Guantánamo</div>
+      <div class="card-who">STD25014</div>
+    </div>
+    <div class="card gold-top">
+      <div class="card-n gold">04</div>
+      <div class="card-title">MÉMOIRE &amp; HÉRITAGE</div>
+      <div class="card-desc">Traumatisme collectif, culture, devoir de mémoire — «Never Forget» comme impératif politique durable</div>
+      <div class="card-who">STD25027</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ S3: RACINES ═══════════════════════════════════════════ -->
+<div class="slide" id="s3">
+  <div class="topbar"></div>
+  <div class="slide-tag">01 — Contexte &amp; Racines · STD25001</div>
+  <div class="slide-h1">LES ORIGINES DE L'ATTENTAT</div>
+  <div class="timeline">
+    <div class="trow"><div class="tbadge">1979</div><div class="tcontent"><div class="ttitle">Guerre d'Afghanistan</div><div class="tdesc">Les USA financent les moudjahidines contre l'URSS (opération Cyclone) — terreau du jihadisme mondial</div></div></div>
+    <div class="trow"><div class="tbadge">1988</div><div class="tcontent"><div class="ttitle">Fondation d'Al-Qaïda</div><div class="tdesc">Ben Laden crée «la base» à Peshawar pour fédérer les combattants — idéologie anti-occidentale structurée</div></div></div>
+    <div class="trow key"><div class="tbadge">1993</div><div class="tcontent"><div class="ttitle">1er attentat WTC</div><div class="tdesc">6 morts, 1 000 blessés — première frappe directe sur le World Trade Center à New York</div></div><div class="tflash">⚡</div></div>
+    <div class="trow"><div class="tbadge">1996</div><div class="tcontent"><div class="ttitle">Fatwa contre les Américains</div><div class="tdesc">Déclaration de guerre — exiger le retrait des troupes US d'Arabie Saoudite</div></div></div>
+    <div class="trow key"><div class="tbadge">1998</div><div class="tcontent"><div class="ttitle">Attentats des ambassades &amp; Fatwa renforcée</div><div class="tdesc">224 morts au Kenya &amp; Tanzanie — appel explicite au meurtre de civils américains</div></div><div class="tflash">⚡</div></div>
+    <div class="trow key"><div class="tbadge">2001</div><div class="tcontent"><div class="ttitle">11 Septembre</div><div class="tdesc">Aboutissement de 2 ans de planification sur le sol américain — 19 pirates de l'air formés au pilotage</div></div><div class="tflash">⚡</div></div>
+  </div>
+  <div class="source-line">Source : 9/11 Commission Report (2004) · CIA World Factbook · Bergen, P. The Longest War (2011)</div>
+</div>
+
+<!-- ══ S4: ANTIAMÉRICANISME ══════════════════════════════════ -->
+<div class="slide" id="s4">
+  <div class="topbar"></div>
+  <div class="slide-tag">01 — Contexte &amp; Racines · STD25001</div>
+  <div class="slide-h1">POURQUOI LES ÉTATS-UNIS ?</div>
+  <div class="card-grid" style="grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr">
+    <div class="card">
+      <div class="card-n" style="font-size:28px">01</div>
+      <div class="card-title" style="font-size:14px">PRÉSENCE MILITAIRE EN ARABIE SAOUDITE</div>
+      <div class="card-desc">Soldats US sur la terre sainte de l'Islam depuis 1991 — profanation intolérable pour Ben Laden, casus belli central de ses deux fatwas</div>
+    </div>
+    <div class="card">
+      <div class="card-n" style="font-size:28px">02</div>
+      <div class="card-title" style="font-size:14px">SOUTIEN INCONDITIONNEL À ISRAËL</div>
+      <div class="card-desc">Humiliation permanente du monde arabo-musulman cautionnée par Washington — conflit israélo-palestinien non résolu</div>
+    </div>
+    <div class="card gold-top">
+      <div class="card-n gold" style="font-size:28px">03</div>
+      <div class="card-title" style="font-size:14px">SANCTIONS CONTRE L'IRAK</div>
+      <div class="card-desc">500 000 enfants morts selon l'UNICEF (1996) — argument de propagande massif exploité par Al-Qaïda pour légitimer le jihad</div>
+    </div>
+    <div class="card gold-top">
+      <div class="card-n gold" style="font-size:28px">04</div>
+      <div class="card-title" style="font-size:14px">FATWA DE BEN LADEN (1998)</div>
+      <div class="card-desc">Déclaration de guerre formelle contre les «croisés et les juifs» — appel explicite à tuer des civils américains partout dans le monde</div>
+    </div>
+  </div>
+  <div class="source-line">Source : 9/11 Commission Report (2004) · World Islamic Front Statement (1998)</div>
+</div>
+
+<!-- ══ S5: CHRONOLOGIE ═══════════════════════════════════════ -->
+<div class="slide" id="s5">
+  <div class="topbar"></div>
+  <div class="slide-tag">02 — L'Attaque · STD25003</div>
+  <div class="slide-h1">11 SEPTEMBRE 2001</div>
+  <div class="timeline">
+    <div class="trow key"><div class="tbadge">8:46</div><div class="tcontent"><div class="ttitle">Tour Nord frappée</div><div class="tdesc">Vol AA11 percute la Tour Nord (WTC 1) entre le 93e et 99e étage — 92 passagers à bord, 1&nbsp;344 personnes piégées</div></div><div class="tflash">⚡</div></div>
+    <div class="trow key"><div class="tbadge">9:03</div><div class="tcontent"><div class="ttitle">Tour Sud frappée — EN DIRECT</div><div class="tdesc">Vol UA175 — diffusé en direct dans le monde entier. Il ne peut plus s'agir d'un accident. Le monde bascule.</div></div><div class="tflash">⚡</div></div>
+    <div class="trow"><div class="tbadge">9:37</div><div class="tcontent"><div class="ttitle">Pentagone frappé</div><div class="tdesc">Vol AA77 s'écrase sur la façade Ouest du Pentagone — 189 morts, symbole militaire touché</div></div></div>
+    <div class="trow key"><div class="tbadge">9:59</div><div class="tcontent"><div class="ttitle">Tour Sud s'effondre</div><div class="tdesc">56 minutes après l'impact — acier fondu à 900°C, effondrement en 10 secondes diffusé en direct</div></div><div class="tflash">⚡</div></div>
+    <div class="trow"><div class="tbadge">10:03</div><div class="tcontent"><div class="ttitle">Vol UA93 s'écrase</div><div class="tdesc">Pennsylvanie — passagers résistent et empêchent l'avion d'atteindre sa cible probable (le Capitole)</div></div></div>
+    <div class="trow key"><div class="tbadge">10:28</div><div class="tcontent"><div class="ttitle">Tour Nord s'effondre — fin</div><div class="tdesc">Bilan final : 2&nbsp;977 morts · 90+ nationalités · 343 pompiers FDNY · 6&nbsp;000+ blessés</div></div><div class="tflash">⚡</div></div>
+  </div>
+  <div class="source-line">Source : 9/11 Commission Report, Ch.1 (2004) · FEMA 403 WTC Building Performance Study (2002)</div>
+</div>
+
+<!-- ══ S6: BILAN ═════════════════════════════════════════════ -->
+<div class="slide" id="s6">
+  <div class="topbar thick"></div>
+  <div class="slide-tag">02 — L'Attaque · Le Bilan · STD25003</div>
+  <div class="slide-h1">LE BILAN HUMAIN</div>
+  <div class="stats-row">
+    <div class="stat red"><span class="stat-v">2 977</span><div class="stat-l">VIES PERDUES</div></div>
+    <div class="stat cream"><span class="stat-v">19</span><div class="stat-l">TERRORISTES</div></div>
+    <div class="stat cream"><span class="stat-v">90+</span><div class="stat-l">NATIONALITÉS</div></div>
+    <div class="stat gold"><span class="stat-v">343</span><div class="stat-l">POMPIERS FDNY</div></div>
+  </div>
+  <div class="impacts">
+    <div class="irow red"><div class="irow-text">Les Twin Towers — 110 étages · 415 m · 50&nbsp;000 travailleurs/jour — cœur économique et symbolique mondial</div></div>
+    <div class="irow"><div class="irow-text">Avions civils transformés en missiles — rupture totale dans la conception de la menace terroriste mondiale</div></div>
+    <div class="irow"><div class="irow-text">Première catastrophe terroriste filmée et diffusée en direct sur l'ensemble des chaînes mondiales — sidération planétaire</div></div>
+    <div class="irow"><div class="irow-text">Pentagone + UA93 visant le Capitole — attaque simultanée sur les trois symboles de la puissance américaine</div></div>
+  </div>
+  <div class="source-line">Source : FDNY Memorial · 9/11 Memorial Museum · Port Authority of NY &amp; NJ</div>
+</div>
+
+<!-- ══ S7: GÉOPOLITIQUE ══════════════════════════════════════ -->
+<div class="slide" id="s7">
+  <div class="topbar gold"></div>
+  <div class="slide-tag gold">03 — Conséquences Géopolitiques · STD25014</div>
+  <div class="slide-h1">LA GUERRE CONTRE LE TERRORISME</div>
+  <div class="geo-rows">
+    <div class="grow"><div class="gyear">2001</div><div class="gdot r"></div><div class="gtitle">GUERRE EN AFGHANISTAN</div><div class="gdesc">20 ans · 2&nbsp;000 Mds $ · Retour des Talibans en août 2021 (Watson Institute, Brown Univ.)</div></div>
+    <div class="grow"><div class="gyear">2003</div><div class="gdot r"></div><div class="gtitle">GUERRE EN IRAK</div><div class="gdesc">Prétexte réfuté par l'ONU · +200&nbsp;000 civils tués · 3&nbsp;000 Mds $ estimés (Stiglitz &amp; Bilmes, 2008)</div></div>
+    <div class="grow"><div class="gyear">2001</div><div class="gdot g"></div><div class="gtitle">USA PATRIOT ACT</div><div class="gdesc">Surveillance de masse · écoutes sans mandat · critiqué ACLU pour atteinte aux libertés fondamentales</div></div>
+    <div class="grow"><div class="gyear">2002</div><div class="gdot g"></div><div class="gtitle">DEPT. HOMELAND SECURITY</div><div class="gdesc">22 agences fédérales fusionnées · 240&nbsp;000 employés · 3e département fédéral américain</div></div>
+    <div class="grow"><div class="gyear">2002</div><div class="gdot gr"></div><div class="gtitle">GUANTÁNAMO BAY</div><div class="gdesc">779 détenus · 30 encore en 2024 · Condamné Amnesty International &amp; Cour Suprême US</div></div>
+  </div>
+</div>
+
+<!-- ══ S8: GROUND ZERO ═══════════════════════════════════════ -->
+<div class="slide" id="s8">
+  <div class="topbar gold"></div>
+  <div class="slide-tag gold">03 — Conséquences Architecturales · STD25014</div>
+  <div class="slide-h1">RECONSTRUIRE GROUND ZERO</div>
+  <div class="three-col">
+    <div class="col-card">
+      <div class="col-num" style="color:var(--red)">I</div>
+      <div class="col-title">ONE WORLD TRADE CENTER</div>
+      <div class="col-rule"></div>
+      <div class="col-kv">
+        <div class="kv-row"><div class="kv-k">OUVERTURE</div><div class="kv-v">Novembre 2014</div></div>
+        <div class="kv-row"><div class="kv-k">HAUTEUR</div><div class="kv-v">541 m = 1&nbsp;776 pieds (année Indépendance US)</div></div>
+        <div class="kv-row"><div class="kv-k">ARCHITECTE</div><div class="kv-v">SOM / David Childs</div></div>
+        <div class="kv-row"><div class="kv-k">COÛT</div><div class="kv-v">3,9 milliards $</div></div>
+      </div>
+      <div class="col-src">Port Authority of New York &amp; New Jersey</div>
+    </div>
+    <div class="col-card gold-top">
+      <div class="col-num" style="color:var(--gold)">II</div>
+      <div class="col-title">9/11 MEMORIAL &amp; MUSEUM</div>
+      <div class="col-rule"></div>
+      <div class="col-kv">
+        <div class="kv-row"><div class="kv-k">INAUGURATION</div><div class="kv-v">11 septembre 2011 (mémorial)</div></div>
+        <div class="kv-row"><div class="kv-k">CONCEPT</div><div class="kv-v">2 bassins sur empreintes exactes des deux tours</div></div>
+        <div class="kv-row"><div class="kv-k">ARCHITECTE</div><div class="kv-v">Michael Arad &amp; Peter Walker</div></div>
+        <div class="kv-row"><div class="kv-k">VISITEURS</div><div class="kv-v">4 millions par an</div></div>
+      </div>
+      <div class="col-src">museum.911memorial.org</div>
+    </div>
+    <div class="col-card cream-top">
+      <div class="col-num" style="color:var(--cream)">III</div>
+      <div class="col-title">NORMES MONDIALES RÉVISÉES</div>
+      <div class="col-rule"></div>
+      <div class="col-kv">
+        <div class="kv-row"><div class="kv-k">PORTÉE</div><div class="kv-v">Toutes les tours &gt; 300 m revisitées</div></div>
+        <div class="kv-row"><div class="kv-k">MESURES</div><div class="kv-v">Escaliers élargis, façades blindées</div></div>
+        <div class="kv-row"><div class="kv-k">ASCENSEURS</div><div class="kv-v">Dédiés pompiers — obligatoires</div></div>
+        <div class="kv-row"><div class="kv-k">NORMES</div><div class="kv-v">NFPA 101 &amp; IBC renforcés dès 2003</div></div>
+      </div>
+      <div class="col-src">NFPA · Council on Tall Buildings and Urban Habitat</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ S9: MÉMOIRE ═══════════════════════════════════════════ -->
+<div class="slide" id="s9">
+  <div class="topbar cream"></div>
+  <div class="slide-tag cream">04 — Mémoire &amp; Héritage · STD25027</div>
+  <div class="slide-h1">NEVER FORGET</div>
+  <div class="mem-layout">
+    <div class="mem-left">
+      <div class="mem-quote-mark">"</div>
+      <div class="mem-quote">Un traumatisme collectif transmis de génération en génération.</div>
+      <div class="mem-rule"></div>
+      <div class="mem-items">
+        <div class="mem-item"><div class="mem-item-t">PTSD COLLECTIF</div><div class="mem-item-d">15 % des New-Yorkais à &lt; 2 km diagnostiqués (Columbia Univ., 2002)</div></div>
+        <div class="mem-item"><div class="mem-item-t">ISLAMOPHOBIE ×3</div><div class="mem-item-d">Hausse brutale des discriminations anti-musulmanes (CAIR, 2002)</div></div>
+        <div class="mem-item"><div class="mem-item-t">CANCERS FDNY</div><div class="mem-item-d">7&nbsp;500 pompiers atteints — Zadroga Act (2010) garantit une prise en charge à vie</div></div>
+      </div>
+    </div>
+    <div class="mem-right">
+      <div class="mem-right-tag">CULTURE &amp; MÉMOIRE</div>
+      <div class="mem-card"><div class="mem-card-t">CINÉMA &amp; LITTÉRATURE</div><div class="mem-card-d">+100 films : United 93 (Greengrass, 2006), Zero Dark Thirty (Bigelow, 2012), WTC (Stone, 2006)… Médiatisation permanente de l'événement dans la culture mondiale.</div></div>
+      <div class="mem-card"><div class="mem-card-t">COMMÉMORATION NATIONALE</div><div class="mem-card-d">Lecture intégrale des 2&nbsp;977 noms par leurs proches chaque 11 septembre depuis 2002 — moments de silence aux heures exactes de chaque impact, retransmis en direct.</div></div>
+      <div class="mem-card"><div class="mem-card-t">DEVOIR DE MÉMOIRE</div><div class="mem-card-d">«Never Forget» inscrit dans les programmes scolaires US — impératif politique et moral transmis aux générations suivantes comme une obligation nationale.</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ S10: CONCLUSION ═══════════════════════════════════════ -->
+<div class="slide" id="s10">
+  <div class="topbar thick"></div>
+  <div class="slide-tag">CONCLUSION</div>
+  <div style="font-family:'Bebas Neue';font-size:clamp(36px,5.8vw,66px);color:#fff;padding:0 32px;letter-spacing:1px;font-style:italic;line-height:1;margin-bottom:12px;flex-shrink:0">
+    Un événement<br>qui a tout changé.
+  </div>
+  <div style="height:3px;background:var(--red);margin:0 32px 10px;flex-shrink:0"></div>
+  <div class="conc-rows">
+    <div class="crow" style="border-color:var(--red)"><div class="crow-n" style="color:var(--red)">I</div><div class="crow-t" style="color:var(--red)">RACINES PROFONDES</div><div class="crow-d">Jihadisme nourri par des décennies de géopolitique — Al-Qaïda capte un ressentiment réel et le radicalise en projet terroriste global</div></div>
+    <div class="crow" style="border-color:var(--red)"><div class="crow-n" style="color:var(--red)">II</div><div class="crow-t" style="color:var(--red)">MOMENT DE BASCULE</div><div class="crow-d">2&nbsp;977 morts · 102 minutes · 90 nationalités — une frappe d'une symbolique et d'une portée mondiales absolument sans précédent dans l'histoire</div></div>
+    <div class="crow" style="border-color:var(--gold)"><div class="crow-n" style="color:var(--gold)">III</div><div class="crow-t" style="color:var(--gold)">GUERRES &amp; SÉCURITARISME</div><div class="crow-d">Afghanistan, Irak, PATRIOT Act, Guantánamo — vingt ans de politiques directement issues de l'attentat, avec des coûts humains et financiers vertigineux</div></div>
+    <div class="crow" style="border-color:var(--cream)"><div class="crow-n" style="color:var(--cream)">IV</div><div class="crow-t" style="color:var(--cream)">MÉMOIRE VIVANTE</div><div class="crow-d">Un traumatisme transmis aux générations par le cinéma, la commémoration annuelle et le devoir de mémoire institutionnalisé</div></div>
+  </div>
+  <div style="text-align:center;font-size:10px;color:#2e2e2e;padding:8px 32px;font-style:italic;flex-shrink:0">
+    « Ground Zero n'est pas seulement un lieu — c'est le point de départ d'une ère nouvelle. »
+  </div>
+</div>
+
+<!-- ══ S11: SOURCES ══════════════════════════════════════════ -->
+<div class="slide" id="s11">
+  <div class="topbar"></div>
+  <div class="slide-tag">Bibliographie &amp; Sources</div>
+  <div class="slide-h1" style="font-size:clamp(28px,4vw,48px)">RÉFÉRENCES</div>
+  <div class="src-body">
+    <div>
+      <div class="src-sec-h" style="color:var(--red);border-color:var(--red)">Rapports officiels</div>
+      <div class="src-item">— 9/11 Commission Report. National Commission on Terrorist Attacks Upon the United States. Washington D.C., 2004.</div>
+      <div class="src-item">— FEMA 403. World Trade Center Building Performance Study. Federal Emergency Management Agency, 2002.</div>
+      <div class="src-item">— NIST NCSTAR 1A. Final Report on the Collapse of WTC Building 7. 2008.</div>
+    </div>
+    <div>
+      <div class="src-sec-h" style="color:var(--gold);border-color:var(--gold)">Ouvrages académiques</div>
+      <div class="src-item">— Bergen, P. The Longest War: The Enduring Conflict between America and Al-Qaeda. Free Press, 2011.</div>
+      <div class="src-item">— Stiglitz, J. &amp; Bilmes, L. The Three Trillion Dollar War. W.W. Norton &amp; Company, 2008.</div>
+      <div class="src-item">— Wright, L. The Looming Tower: Al-Qaeda and the Road to 9/11. Knopf, 2006. [Prix Pulitzer]</div>
+    </div>
+    <div>
+      <div class="src-sec-h" style="color:var(--cream);border-color:var(--cream)">Sources institutionnelles</div>
+      <div class="src-item">— National September 11 Memorial &amp; Museum — museum.911memorial.org &nbsp;·&nbsp; Watson Institute, Brown Univ. — watson.brown.edu</div>
+      <div class="src-item">— ACLU — aclu.org &nbsp;·&nbsp; Amnesty International &nbsp;·&nbsp; Iraq Body Count — iraqbodycount.org</div>
+      <div class="src-item">— CAIR Annual Islamophobia Report (2002) &nbsp;·&nbsp; NFPA 101 (2003) &nbsp;·&nbsp; DHS.gov &nbsp;·&nbsp; WTC Health Program — cdc.gov/wtc</div>
+    </div>
+  </div>
+</div>
+
+</div><!-- /deck -->
+
+<!-- NAV -->
+<div id="nav">
+  <button class="nav-btn" id="prevBtn" onclick="go(-1)">◀ PRÉC.</button>
+  <div id="dots"></div>
+  <div id="counter">1 / 11</div>
+  <button class="nav-btn" id="nextBtn" onclick="go(1)">SUIV. ▶</button>
+</div>
+
+<script>
+const TOTAL=11,slides=[];
+let cur=1,dir=1,busy=false;
+
+for(let i=1;i<=TOTAL;i++) slides.push(document.getElementById('s'+i));
+
+function buildDots(){
+  const d=document.getElementById('dots');
+  for(let i=1;i<=TOTAL;i++){
+    const dot=document.createElement('div');
+    dot.className='dot'+(i===1?' on':'');
+    dot.onclick=(()=>{const n=i;return()=>goTo(n);})();
+    d.appendChild(dot);
+  }
+}
+
+function updateUI(){
+  document.getElementById('counter').textContent=cur+' / '+TOTAL;
+  document.getElementById('prevBtn').disabled=cur===1;
+  document.getElementById('nextBtn').disabled=cur===TOTAL;
+  document.querySelectorAll('.dot').forEach((d,i)=>d.classList.toggle('on',i+1===cur));
+}
+
+function goTo(n){
+  if(n<1||n>TOTAL||n===cur||busy)return;
+  busy=true;
+  const fwd=n>cur;
+  const prev=slides[cur-1];
+  const next=slides[n-1];
+  dir=fwd?1:-1;
+  const outCls=fwd?'anim-out':'anim-out-back';
+  const inCls=fwd?'anim-in':'anim-in-back';
+  prev.classList.add(outCls);
+  next.style.display='flex';
+  next.classList.add(inCls);
+  prev.addEventListener('animationend',()=>{
+    prev.style.display='none';
+    prev.classList.remove('active',outCls);
+  },{once:true});
+  next.addEventListener('animationend',()=>{
+    next.classList.add('active');
+    next.classList.remove(inCls);
+    busy=false;
+    if(n===1)setTimeout(triggerCover,400);
+    if(n===5)triggerChronoFlash();
+  },{once:true});
+  cur=n;
+  updateUI();
+}
+
+function go(d){goTo(cur+d)}
+
+document.addEventListener('keydown',e=>{
+  if(['ArrowRight','ArrowDown',' '].includes(e.key)){e.preventDefault();go(1)}
+  if(['ArrowLeft','ArrowUp'].includes(e.key)){e.preventDefault();go(-1)}
+});
+
+// swipe
+let tx=0;
+document.addEventListener('touchstart',e=>tx=e.touches[0].clientX,{passive:true});
+document.addEventListener('touchend',e=>{
+  const dx=e.changedTouches[0].clientX-tx;
+  if(Math.abs(dx)>50)go(dx<0?1:-1);
+},{passive:true});
+
+// ─── COVER ANIMATION ──────────────────────────────────────
+function triggerCover(){
+  const plane=document.getElementById('plane');
+  const exp=document.getElementById('explosion');
+  const smoke=document.getElementById('smoke');
+  const c=[document.getElementById('ec1'),document.getElementById('ec2'),
+            document.getElementById('ec3'),document.getElementById('ec4')];
+
+  // reset
+  plane.style.cssText='transform:translate(-280px,-70px)rotate(-12deg)scaleX(-1);opacity:0;transition:none';
+  exp.style.opacity=0; smoke.style.opacity=0;
+  c.forEach(e=>e.setAttribute('r','0'));
+
+  setTimeout(()=>{
+    plane.style.cssText='animation:planeMove 3.4s ease-in forwards';
+  },600);
+
+  // explosion at ~2.9s
+  setTimeout(()=>{
+    exp.style.opacity=1;
+    let r=[0,0,0,0],mx=[20,16,14,18];
+    const t=setInterval(()=>{
+      let done=true;
+      r.forEach((v,i)=>{r[i]=Math.min(v+2,mx[i]);c[i].setAttribute('r',r[i]);if(r[i]<mx[i])done=false;});
+      if(done)clearInterval(t);
+    },30);
+    setTimeout(()=>{
+      const t2=setInterval(()=>{
+        let all0=true;
+        r.forEach((v,i)=>{r[i]=Math.max(v-1.5,0);c[i].setAttribute('r',r[i]);if(r[i]>0)all0=false;});
+        if(all0){clearInterval(t2);exp.style.opacity=0;}
+      },40);
+    },700);
+  },2950);
+
+  // smoke
+  setTimeout(()=>{
+    smoke.style.opacity=.75;
+    smoke.style.animation='smokeRise 2.5s ease-out forwards';
+    setTimeout(()=>{smoke.style.opacity=0;smoke.style.animation='';},2500);
+  },3100);
+}
+
+// ─── CHRONO FLASH ─────────────────────────────────────────
+function triggerChronoFlash(){
+  const rows=document.querySelectorAll('#s5 .trow.key');
+  rows.forEach((row,i)=>{
+    setTimeout(()=>{
+      row.style.background='rgba(212,43,43,.28)';
+      setTimeout(()=>row.style.background='',700);
+    },i*220+100);
+  });
+}
+
+// ─── FULLSCREEN ───────────────────────────────────────────
+function toggleFS(){
+  if(!document.fullscreenElement)document.documentElement.requestFullscreen?.();
+  else document.exitFullscreen?.();
+}
+
+buildDots();updateUI();
+setTimeout(triggerCover,800);
+</script>
+</body>
+</html>
